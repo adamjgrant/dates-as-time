@@ -23,15 +23,25 @@ const get_date_time_in_milliseconds_past_midnight = (current_local_datetime) => 
 }
 
 const get_monthiness_for_milliseconds_past_midnight = (datetime_in_milliseconds) => {
-    let full_datetime = ["Jan", 1, 0, 0, 0];
+    let full_datetime = [0, 0, 0, 0, 0];
     const progress_in_day = parseFloat(datetime_in_milliseconds / MILLISECONDS_IN_A_DAY);
     const month_index = Math.floor(progress_in_day * 12.0);
-    full_datetime[0] = MONTH_ARRAY[month_index];
-    return get_dayiness_for_milliseconds_past_midnight(full_datetime, progress_in_day);
+    full_datetime[0] = month_index;
+    return get_dayiness_for_milliseconds_past_midnight(full_datetime, datetime_in_milliseconds);
 }
 
-const get_dayiness_for_milliseconds_past_midnight = (full_datetime, progress_in_day) => {
-    const progress_in_day_as_day = parseFloat(progress_in_day * 365.0);
+const get_dayiness_for_milliseconds_past_midnight = (full_datetime, datetime_in_milliseconds) => {
+    // We need a new quotient in the month context.
+    // Carrying on will make the hour, month, second precision disappear in distant decimal points.
+    let milliseconds_passed_in_previous_months = DAYS_IN_EACH_MONTH
+        .slice(0, full_datetime[0])
+        .reduce((p,n) => p+n) * MILLISECONDS_IN_A_DAY;
+
+    const days_in_this_month = DAYS_IN_EACH_MONTH[full_datetime[0]];
+    let milliseconds_in_current_month = days_in_this_month * MILLISECONDS_IN_A_DAY;
+    let milliseconds_elapsed_in_current_month = ( datetime_in_milliseconds - milliseconds_passed_in_previous_months )
+
+    const progress_in_day_as_day = parseFloat(milliseconds_elapsed_in_current_month / milliseconds_in_current_month * days_in_this_month);
     const day_of_year_index = Math.floor(progress_in_day_as_day);
     full_datetime[1] = day_of_month_for_day_of_year(day_of_year_index + 1);
 
@@ -40,7 +50,7 @@ const get_dayiness_for_milliseconds_past_midnight = (full_datetime, progress_in_
 }
 
 const get_houriness_for_milliseconds_past_midnight = (full_datetime, remainder_of_day) => {
-    
+
     const hour = Math.floor(remainder_of_day * 24.0);
     full_datetime[2] = hour;
 
@@ -91,7 +101,7 @@ const day_of_month_for_day_of_year = (day_of_year) => {
 setInterval(() => {
     const [month, day, hour, minute, second] = get_current_local_date_time();
 
-    month_element.innerHTML = month;
+    month_element.innerHTML = MONTH_ARRAY[month];
     day_element.innerHTML   = getOrdinal(day);
     hour_element.innerHTML  = pad(hour);
     minute_element.innerHTML= pad(minute);
