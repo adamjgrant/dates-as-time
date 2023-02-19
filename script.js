@@ -1,3 +1,8 @@
+// CONSTANTS
+const MONTH_ARRAY = "Jan,Feb,Mar,Apr,May,Jun,Jul,Aug,Sept,Oct,Nov,Dec".split(",");
+const DAYS_IN_EACH_MONTH = [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
+
+// FUNCTIONAL FLOW
 const get_current_local_date_time = () => {
     var current_local_date_time = new Date().toLocaleString();
     return get_date_time_in_milliseconds_past_midnight(current_local_date_time);
@@ -13,12 +18,14 @@ const get_monthiness_for_milliseconds_past_midnight = (datetime_in_milliseconds)
     let full_datetime = ["Jan", 1, 0, 0, 0];
     const milliseconds_in_a_day = 86400000;
     const progress_in_day = datetime_in_milliseconds / milliseconds_in_a_day;
-    const month_index = Math.floor(progress_in_day * 12) - 1
-    full_datetime[0] = "Jan,Feb,Mar,Apr,May,Jun,Jul,Aug,Sept,Oct,Nov,Dec".split(",")[month_index];
+    const month_index = Math.floor(progress_in_day * 12) - 1;
+    full_datetime[0] = MONTH_ARRAY[month_index];
     return get_dayiness_for_milliseconds_past_midnight(full_datetime, progress_in_day);
 }
 
 const get_dayiness_for_milliseconds_past_midnight = (full_datetime, progress_in_day) => {
+    const day_of_year_index = Math.floor((progress_in_day * 365)) + 1;
+    full_datetime[1] = day_of_month_for_day_of_year(day_of_year_index);
     return get_houriness_for_milliseconds_past_midnight(full_datetime);
 }
 
@@ -30,14 +37,31 @@ const get_minutiness_for_milliseconds_past_midnight = (full_datetime, progress_i
     return full_datetime;
 }
 
+// FORMATTING FUNCTIONS
 const pad = (n) => (n < 10) ? ("0" + n) : n;
 
-function getOrdinal(n) {
+const getOrdinal = (n) => {
     let s = ["th","st","nd","rd"];
     let v = n%100;
     return n+(s[(v-20)%10]||s[v]||s[0]);
 }
 
+const day_of_month_for_day_of_year = (day_of_year) => {
+    var month = 0;
+    var day = 0;
+    while (day_of_year > 0) {
+        if (day_of_year > DAYS_IN_EACH_MONTH[month]) {
+        day_of_year -= DAYS_IN_EACH_MONTH[month];
+        month++;
+        } else {
+        day = day_of_year;
+        day_of_year = 0;
+        }
+    }
+    return day;
+}
+
+// FINAL OUTPUT
 setTimeout(() => {
     const [month, day, hour, minute, second] = get_current_local_date_time();
     const [month_element, day_element, hour_element, minute_element, second_element] = [
