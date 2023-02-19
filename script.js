@@ -97,4 +97,4 @@ setInterval(() => {
     hour_element.innerHTML  = pad(hour);
     minute_element.innerHTML= pad(minute);
     second_element.innerHTML= pad(second);
-}, 100);
+}, 50);
