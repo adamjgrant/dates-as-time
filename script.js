@@ -10,15 +10,40 @@ const [month_element, day_element, hour_element, minute_element, second_element]
     document.getElementById("second")
 ];
 
-// FUNCTIONAL FLOW
-const get_current_local_date_time = () => {
-    var current_local_date_time = new Date().toLocaleString();
-    return get_date_time_in_milliseconds_past_midnight(current_local_date_time);
+// FORMATTING AND UTILITY FUNCTIONS
+const pad = (n) => (n < 10) ? ("0" + n) : n;
+
+const getOrdinal = (n) => {
+    let s = ["th","st","nd","rd"];
+    let v = n%100;
+    return n+(s[(v-20)%10]||s[v]||s[0]);
 }
 
-const get_date_time_in_milliseconds_past_midnight = (current_local_datetime) => {
-    const date = new Date(current_local_datetime);
-    const datetime_in_milliseconds = date.getHours() * 3600000 + date.getMinutes() * 60000 + date.getSeconds() * 1000 + date.getMilliseconds();
+const day_of_month_for_day_of_year = (day_of_year) => {
+    var month = 0;
+    var day = 0;
+    while (day_of_year > 0) {
+        if (day_of_year > DAYS_IN_EACH_MONTH[month]) {
+        day_of_year -= DAYS_IN_EACH_MONTH[month];
+        month++;
+        } else {
+        day = day_of_year;
+        day_of_year = 0;
+        }
+    }
+    return day;
+}
+
+const date_to_ms = (date) => {
+    return date.getHours() * 3600000 + date.getMinutes() * 60000 + date.getSeconds() * 1000 + date.getMilliseconds();
+}
+
+// FUNCTIONAL FLOW
+const get_current_local_date_time = () => {
+    var now = new Date(new Date().toLocaleString());
+    var midnight = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 0, 0, 0, 0);
+    let extra_ms = new Date().getMilliseconds();
+    const datetime_in_milliseconds = date_to_ms(now) - date_to_ms(midnight) + extra_ms;
     return get_monthiness_for_milliseconds_past_midnight(datetime_in_milliseconds);
 }
 
@@ -61,30 +86,6 @@ const get_secondiness_for_milliseconds_past_midnight = (full_datetime, remainder
     full_datetime[4] = second;
 
     return full_datetime;
-}
-
-// FORMATTING FUNCTIONS
-const pad = (n) => (n < 10) ? ("0" + n) : n;
-
-const getOrdinal = (n) => {
-    let s = ["th","st","nd","rd"];
-    let v = n%100;
-    return n+(s[(v-20)%10]||s[v]||s[0]);
-}
-
-const day_of_month_for_day_of_year = (day_of_year) => {
-    var month = 0;
-    var day = 0;
-    while (day_of_year > 0) {
-        if (day_of_year > DAYS_IN_EACH_MONTH[month]) {
-        day_of_year -= DAYS_IN_EACH_MONTH[month];
-        month++;
-        } else {
-        day = day_of_year;
-        day_of_year = 0;
-        }
-    }
-    return day;
 }
 
 // FINAL OUTPUT
