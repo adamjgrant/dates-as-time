@@ -1,6 +1,14 @@
 // CONSTANTS
 const MONTH_ARRAY = "Jan,Feb,Mar,Apr,May,Jun,Jul,Aug,Sept,Oct,Nov,Dec".split(",");
 const DAYS_IN_EACH_MONTH = [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
+const MILLISECONDS_IN_A_DAY = 86400000;
+const [month_element, day_element, hour_element, minute_element, second_element] = [
+    document.getElementById("month"),
+    document.getElementById("day"),
+    document.getElementById("hour"),
+    document.getElementById("minute"),
+    document.getElementById("second")
+];
 
 // FUNCTIONAL FLOW
 const get_current_local_date_time = () => {
@@ -16,24 +24,42 @@ const get_date_time_in_milliseconds_past_midnight = (current_local_datetime) => 
 
 const get_monthiness_for_milliseconds_past_midnight = (datetime_in_milliseconds) => {
     let full_datetime = ["Jan", 1, 0, 0, 0];
-    const milliseconds_in_a_day = 86400000;
-    const progress_in_day = datetime_in_milliseconds / milliseconds_in_a_day;
-    const month_index = Math.floor(progress_in_day * 12) - 1;
+    const progress_in_day = parseFloat(datetime_in_milliseconds / MILLISECONDS_IN_A_DAY);
+    const month_index = Math.floor(progress_in_day * 12.0);
     full_datetime[0] = MONTH_ARRAY[month_index];
     return get_dayiness_for_milliseconds_past_midnight(full_datetime, progress_in_day);
 }
 
 const get_dayiness_for_milliseconds_past_midnight = (full_datetime, progress_in_day) => {
-    const day_of_year_index = Math.floor((progress_in_day * 365)) + 1;
-    full_datetime[1] = day_of_month_for_day_of_year(day_of_year_index);
-    return get_houriness_for_milliseconds_past_midnight(full_datetime);
+    const progress_in_day_as_day = parseFloat(progress_in_day * 365.0);
+    const day_of_year_index = Math.floor(progress_in_day_as_day);
+    full_datetime[1] = day_of_month_for_day_of_year(day_of_year_index + 1);
+
+    const remainder_of_day = progress_in_day_as_day - day_of_year_index; 
+    return get_houriness_for_milliseconds_past_midnight(full_datetime, remainder_of_day);
 }
 
-const get_houriness_for_milliseconds_past_midnight = (full_datetime, progress_in_day) => {
-    return get_minutiness_for_milliseconds_past_midnight(full_datetime);
+const get_houriness_for_milliseconds_past_midnight = (full_datetime, remainder_of_day) => {
+    
+    const hour = Math.floor(remainder_of_day * 24.0);
+    full_datetime[2] = hour;
+
+    const remainder_of_hour = parseFloat(remainder_of_day * 24.0 - hour);
+    return get_minutiness_for_milliseconds_past_midnight(full_datetime, remainder_of_hour);
 }
 
-const get_minutiness_for_milliseconds_past_midnight = (full_datetime, progress_in_day) => {
+const get_minutiness_for_milliseconds_past_midnight = (full_datetime, remainder_of_hour) => {
+    const minute = Math.floor(remainder_of_hour * 60.0);
+    full_datetime[3] = minute;
+
+    const remainder_of_minute = remainder_of_hour * 60.0 - minute;
+    return get_secondiness_for_milliseconds_past_midnight(full_datetime, remainder_of_minute);
+}
+
+const get_secondiness_for_milliseconds_past_midnight = (full_datetime, remainder_of_minute) => {
+    const second = Math.floor(remainder_of_minute * 60.0);
+    full_datetime[4] = second;
+
     return full_datetime;
 }
 
@@ -62,15 +88,8 @@ const day_of_month_for_day_of_year = (day_of_year) => {
 }
 
 // FINAL OUTPUT
-setTimeout(() => {
+setInterval(() => {
     const [month, day, hour, minute, second] = get_current_local_date_time();
-    const [month_element, day_element, hour_element, minute_element, second_element] = [
-        document.getElementById("month"),
-        document.getElementById("day"),
-        document.getElementById("hour"),
-        document.getElementById("minute"),
-        document.getElementById("second")
-    ];
 
     month_element.innerHTML = month;
     day_element.innerHTML   = getOrdinal(day);
